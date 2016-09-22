@@ -1,8 +1,10 @@
 # cron-swoole
 1.使用方法
+
     ```
         php Main.php {start|stop|reload} [-d]
     ```
+
     - start :表示启动计划任务
 
     - reload:表示你修改了计划任务文件，重新载入文件
