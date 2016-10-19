@@ -99,9 +99,8 @@ class Main{
      */
     private static function _stop()
     {
-        $pid = file_get_contents(self::$_pidFile);
-        $masterIsAlive = trim(`ps -e|awk '{print $1}'|grep $pid`);
-        if($pid && $masterIsAlive == $pid)
+        $pid = file_exists(self::$_pidFile) ? file_get_contents(self::$_pidFile) : '';
+        if($pid && \swoole_process::kill($pid,0))
         {
             self::log("monster [pid:$pid] is stoping ...");
             \swoole_process::kill($pid,SIGINT);
@@ -109,6 +108,7 @@ class Main{
             self::log("monster [pid:$pid] don't alive...");
             self::_clearChildren();
         }
+
     }
 
     /**
@@ -117,9 +117,8 @@ class Main{
      */
     private static function _reload()
     {
-        $pid = file_get_contents(self::$_pidFile);
-        $masterIsAlive = trim(`ps -e|awk '{print $1}'|grep $pid`);
-        if($pid && $masterIsAlive == $pid)
+        $pid = file_exists(self::$_pidFile) ? file_get_contents(self::$_pidFile) : '';
+        if($pid && \swoole_process::kill($pid,0))
         {
             self::log("monster [pid:$pid] is reloading ...");
             \swoole_process::kill($pid,SIGUSR1);
@@ -135,8 +134,9 @@ class Main{
      */
     private static function _clearChildren()
     {
-        $file = self::$_runFile;
-        exec("ps -e|grep $file|grep -v grep|xargs kill -9");
+        $nowPid = getmypid();
+        $file   = self::$_runFile;
+        exec("ps -e|grep $file|grep -v grep|awk '{print $1}'|grep -v ^$nowPid$|xargs kill -9");
         @unlink(self::$_pidFile);
     }
 
